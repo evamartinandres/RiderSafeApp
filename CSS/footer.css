@@ -1,0 +1,13 @@
+
+
+    /* Estilo opcional para el footer */
+    .footer {
+      height: 60px;
+      background-color: #000000; /* color claro */
+      /* border-top: 1px solid #ddd; */
+    }
+
+    .footer img:hover {
+      opacity: 1;
+    }
+
