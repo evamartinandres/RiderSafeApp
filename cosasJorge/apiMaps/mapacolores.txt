@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa GPX</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 1em;
+    }
+    #map {
+      width: 100%;
+      height: 500px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h3>Subir ruta GPX</h3>
+
+  <label>Color de la ruta:</label>
+  <input type="color" id="colorPicker" value="#ff0000">
+  <input type="file" id="gpxFile" accept=".gpx">
+
+  <div id="map"></div>
+
+  <script>
+    let map;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 40.4168, lng: -3.7038 }, // Madrid
+        zoom: 6,
+      });
+
+      document.getElementById("gpxFile").addEventListener("change", handleFileSelect);
+    }
+
+    function handleFileSelect(evt) {
+      const file = evt.target.files[0];
+      const color = document.getElementById("colorPicker").value;
+
+      if (!file) {
+        alert("Por favor selecciona un archivo GPX.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const gpxData = e.target.result;
+        drawGpxRoute(gpxData, color);
+      };
+      reader.readAsText(file);
+    }
+
+    function drawGpxRoute(gpxText, color) {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(gpxText, "application/xml");
+      const trkpts = xml.getElementsByTagName("trkpt");
+      if (trkpts.length === 0) {
+        alert("No se encontraron puntos en el archivo GPX.");
+        return;
+      }
+
+      const path = [];
+      for (let i = 0; i < trkpts.length; i++) {
+        const lat = parseFloat(trkpts[i].getAttribute("lat"));
+        const lon = parseFloat(trkpts[i].getAttribute("lon"));
+        path.push({ lat, lng: lon });
+      }
+
+      const polyline = new google.maps.Polyline({
+        path,
+        geodesic: true,
+        strokeColor: color,
+        strokeOpacity: 0.9,
+        strokeWeight: 4,
+        map: map,
+      });
+
+      const bounds = new google.maps.LatLngBounds();
+      path.forEach(p => bounds.extend(p));
+      map.fitBounds(bounds);
+    }
+  </script>
+
+  <script async defer 
+    src="https://maps.googleapis.com/maps/api/js?key=&callback=initMap">
+  </script>
+
+</body>
+</html>
